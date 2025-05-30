@@ -31,14 +31,18 @@ Install (short URL to `install.shell.sh`):
 ```bash
 bash -c "$( wget -q https://dub.sh/dev.sh -O -)"
 ```
-Or custom args (no prompt):
+Or custom args:
 ```bash
 wget dub.sh/dev.sh
-bash dev.sh "all"
+bash dev.sh #prompt which to install
+```
+Install all automated:
+```bash
+bash dev.sh all #install all
 ```
 Or specific apps only:
 ```bash
-bash dev.sh "starship,docker,node"
+bash dev.sh starship,docker,node
 ```
 
 ## Example: System Info When Opening Shell

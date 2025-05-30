@@ -34,7 +34,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Exit script immediately if any command returns a non-zero status
-set -e
+# set -e
 
 # Detect operating system
 detect_os() {
@@ -523,6 +523,7 @@ install_nvim() {
     print_msg "$YELLOW" "Setting up LazyVim configuration for Neovim"
     mkdir -p ~/.config
     [ -d ~/.config/nvim ] && mv ~/.config/nvim{,.bak}
+    rm -rf ~/.config/nvim
     git clone https://github.com/LazyVim/starter ~/.config/nvim
     # Launch Neovim in background to initialize LazyVim
     nvim --headless "+Lazy! sync" +qa >/dev/null 2>&1 &
@@ -539,7 +540,7 @@ install_helix() {
     case "$OS" in
     ubuntu | debian)
         if command_exists add-apt-repository; then
-             add-apt-repository -y ppa:maveonair/helix-editor
+            sudo add-apt-repository -y ppa:maveonair/helix-editor
         fi
         sudo apt update
         sudo apt install -y helix
@@ -747,28 +748,19 @@ enable_sudo_without_password() {
 
 # Show menu and get user selection
 show_menu() {
-    print_header "Developer Environment Setup"
-    echo "Select components to install (comma-separated numbers or 'all'):"
-    echo ""
-    echo "Shell Options:"
-    echo "  1) Fish Shell - Modern shell with auto-suggestions"
-    echo "  2) Nushell - Data-oriented shell with structured data handling"
-    echo ""
-    echo "Editor Options:"
+    echo "Select dev tools to install (comma-separated numbers or 'all'):"
+    echo "  1) Install Everything"
+    echo "  2) Fish Shell - Modern shell with auto-suggestions"
     echo "  3) Neovim - Vim-based editor with LazyVim configuration"
     echo "  4) Helix - Modern terminal-based editor written in Rust"
-    echo ""
-    echo "Development Tools:"
     echo "  5) Node.js - JavaScript runtime via Volta version manager"
     echo "  6) Bun - Fast JavaScript runtime and package manager"
     echo "  7) Pacstall - Package manager for Debian/Ubuntu (like AUR)"
     echo "  8) Docker - Container platform with rootless mode"
-    echo ""
-    echo "Customization:"
     echo "  9) Starship Prompt - Cross-shell customizable prompt"
-    echo " 10) System Info Greeting - System stats on login"
-    echo ""
-    echo " 11) Install Everything"
+    echo "  10) System Info Greeting - System stats on login"
+    echo "  11) Nushell - Data-oriented shell with structured data handling"
+    echo "  12) VSCode - Modern IDE with terminal & extensions"
     echo ""
 
     read -p "Enter your choice(s): " CHOICE < /dev/tty
@@ -784,16 +776,15 @@ parse_selection() {
     # Initialize empty array for components
     COMPONENTS=()
 
-    # If "all" or "11", select everything
-    if [[ "$selection" == "all" || "$selection" == "11" ]]; then
-        COMPONENTS=(fish nushell nvim helix node bun pacstall docker starship systeminfo sudo)
+    # If "all" or "1", select everything
+    if [[ "$selection" == "" || "$selection" == "all" || "$selection" == "1" ]]; then
+        COMPONENTS=(fish nushell nvim helix node bun pacstall docker starship systeminfo code)
     else
         # Split by commas and process each number
         IFS=',' read -ra NUMS <<<"$selection"
         for num in "${NUMS[@]}"; do
             case "$num" in
-            1) COMPONENTS+=("fish") ;;
-            2) COMPONENTS+=("nushell") ;;
+            2) COMPONENTS+=("fish") ;;
             3) COMPONENTS+=("nvim") ;;
             4) COMPONENTS+=("helix") ;;
             5) COMPONENTS+=("node") ;;
@@ -802,8 +793,8 @@ parse_selection() {
             8) COMPONENTS+=("docker") ;;
             9) COMPONENTS+=("starship") ;;
             10) COMPONENTS+=("systeminfo") ;;
-            11) COMPONENTS+=("ssh") ;;
-            12) COMPONENTS+=("sudo") ;;
+            11) COMPONENTS+=("nushell") ;;
+            12) COMPONENTS+=("code") ;;
             *) echo "Invalid selection: $num" ;;
             esac
         done
@@ -860,6 +851,7 @@ install_components() {
         docker) install_docker ;;
         starship) install_starship ;;
         systeminfo) install_systeminfo ;;
+        code) install_code ;;
         sudo) enable_sudo_without_password ;;
         ssh) enable_ssh_with_password ;;
         esac
@@ -896,10 +888,16 @@ main() {
     # Interactive mode
     while true; do
         show_menu
-        if [[ "$CHOICE" == "14" || "$CHOICE" == "quit" || "$CHOICE" == "q" ]]; then
+        if [[ "$CHOICE" == "quit" || "$CHOICE" == "q" ]]; then
             echo "Exiting."
             exit 0
         fi
+
+        # Prompt for sudo password upfront
+        sudo -v
+
+        # Optionally, keep sudo alive for the duration of the script
+        while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
         parse_selection "$CHOICE"
 
