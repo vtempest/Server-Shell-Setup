@@ -1,0 +1,30 @@
+
+
+services:
+  aws-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aws-manager
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - EC2_INSTANCE_ID=${EC2_INSTANCE_ID}
+      - EC2_REGION=${EC2_REGION:-us-east-1}
+    volumes:
+      - ./aws-credentials:/root/.aws:ro
+      - .:/app
+      - /app/node_modules
+    working_dir: /app
+    command: ["bun", "run", "reboot"]
+    restart: unless-stopped
+    networks:
+      - aws-manager-network
+
+
+networks:
+  aws-manager-network:
+    driver: bridge
+
+volumes:
+  aws-credentials:

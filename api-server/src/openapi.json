@@ -1,0 +1,190 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "System Operations API",
+    "version": "1.0.0",
+    "description": "API for common system operations and package installations"
+  },
+  "paths": {
+    "/install": {
+      "post": {
+        "summary": "Install applications",
+        "description": "Install specified applications on the system",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "apps": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of application names to install"
+                  },
+                  "platform": {
+                    "type": "string",
+                    "enum": ["ubuntu", "debian", "fedora", "centos", "arch", "macos"],
+                    "description": "Target platform for installation"
+                  }
+                },
+                "required": ["apps", "platform"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Installation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "app": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "500": {
+            "description": "Server error during installation"
+          }
+        }
+      }
+    },
+    "/command": {
+      "post": {
+        "summary": "Execute system command",
+        "description": "Execute a common OS command translated to the appropriate platform-specific command",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "enum": [
+                      "list-files",
+                      "disk-usage",
+                      "memory-usage",
+                      "cpu-info",
+                      "process-list",
+                      "find-file",
+                      "network-connections",
+                      "check-port",
+                      "create-directory",
+                      "remove-directory",
+                      "copy-file",
+                      "move-file"
+                    ],
+                    "description": "Command to execute"
+                  },
+                  "params": {
+                    "type": "object",
+                    "properties": {
+                      "all": {
+                        "type": "boolean",
+                        "description": "Show all files (for list-files)"
+                      },
+                      "dir": {
+                        "type": "string",
+                        "description": "Target directory (for list-files, find-file)"
+                      },
+                      "human": {
+                        "type": "boolean",
+                        "description": "Human readable format (for disk-usage)"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "Target path (for disk-usage, create-directory, remove-directory)"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "File name pattern (for find-file)"
+                      },
+                      "port": {
+                        "type": "string",
+                        "description": "Port number (for check-port)"
+                      },
+                      "source": {
+                        "type": "string",
+                        "description": "Source path (for copy-file, move-file)"
+                      },
+                      "destination": {
+                        "type": "string",
+                        "description": "Destination path (for copy-file, move-file)"
+                      }
+                    }
+                  },
+                  "platform": {
+                    "type": "string",
+                    "enum": ["linux", "macos", "windows"],
+                    "description": "Platform to execute the command on"
+                  }
+                },
+                "required": ["command", "platform"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Command executed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "output": {
+                      "type": "string"
+                    },
+                    "command": {
+                      "type": "string",
+                      "description": "The actual command that was executed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid command or parameters"
+          },
+          "500": {
+            "description": "Error executing command"
+          }
+        }
+      }
+    }
+  }
+} 
